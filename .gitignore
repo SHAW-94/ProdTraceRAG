@@ -1,0 +1,133 @@
+# Secrets / local config
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.crt
+
+# Logs / runtime artifacts
+logs/
+*.log
+
+# Local vector DB / indexes
+.chroma/
+*.sqlite3
+*.sqlite
+*.db
+
+# Reports / generated outputs (optional)
+reports/
+SAMPLE_REPORT.md
+*.md.tmp
+
+# Python cache / build
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtualenv / tooling
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter / notebooks
+.ipynb_checkpoints/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# VS Code / Remote cache
+.vscode/
+.vscode-server/
+
+# VS Code / Remote cache
+.vscode/
+.vscode-server/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Runtime artifacts
+.env
+.env.*
+.chroma/
+logs/
+reports/
+
+# OS / tooling
+.DS_Store
+
+# VS Code / Remote cache
+.vscode/
+.vscode-server/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Runtime artifacts
+.env
+.env.*
+.chroma/
+logs/
+reports/
+
+# OS / tooling
+.DS_Store
+
+# --- open-source-safety:begin ---
+# Local env / secrets
+.env
+.env.*
+!.env.example
+
+# Runtime artifacts
+reports/
+logs/
+.chroma/
+.chroma_ci*/
+.chroma_ci*
+*.log
+nohup.out
+
+# Editor / remote dev caches
+.vscode/
+.vscode-server/
+.idea/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# OS
+.DS_Store
+# --- open-source-safety:end ---

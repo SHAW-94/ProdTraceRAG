@@ -1,0 +1,37 @@
+name: open-source-sanity
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+
+jobs:
+  py-compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile Python files
+        run: |
+          python -m py_compile app/*.py || true
+          python -m py_compile scripts/*.py || true
+          python -m py_compile eval/*.py || true
+      - name: Fail if syntax errors exist
+        run: |
+          python - <<'PY'
+          import glob, py_compile, sys
+          failed = []
+          for pat in ("app/*.py", "scripts/*.py", "eval/*.py"):
+              for f in glob.glob(pat):
+                  try:
+                      py_compile.compile(f, doraise=True)
+                  except Exception as e:
+                      failed.append((f, str(e)))
+          if failed:
+              for f, e in failed:
+                  print(f"[FAIL] {f}: {e}")
+              sys.exit(1)
+          print("Syntax check passed")
+          PY

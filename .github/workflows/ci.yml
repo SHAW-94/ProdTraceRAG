@@ -1,0 +1,76 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-gate:
+    runs-on: ubuntu-latest
+    env:
+      AUTH_REQUIRED: "0"
+      LLM_PROVIDER: none
+      CHROMA_DIR: .chroma_ci
+      ENABLE_BM25: "1"
+      ENABLE_EXPANSION: "1"
+      ENABLE_DIVERSITY: "1"
+      QUERY_EXPANSIONS: "1"
+      DIVERSITY_LAMBDA: "0.25"
+      INJECTION_PENALTY: "0.25"
+      STRICT_CITATION: "1"
+      CLARIFY_MAX_SCORE: "0.36"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install fastapi uvicorn pydantic chromadb rank-bm25 jieba numpy requests pytest
+          fi
+
+      - name: Compile check
+        run: |
+          python -m py_compile app/api.py app/llm_gen.py eval/run_eval.py
+
+      - name: Start server
+        run: |
+          nohup uvicorn app.api:app --host 127.0.0.1 --port 8000 >/tmp/uvicorn.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8000/config >/dev/null 2>&1; then
+              echo "server ready"
+              break
+            fi
+            sleep 0.5
+          done
+          curl -s http://127.0.0.1:8000/config | python -m json.tool
+
+      - name: Ingest demo corpus
+        run: |
+          test -d demo_corpus
+          curl -s -X POST http://127.0.0.1:8000/ingest_local \
+            -H 'Content-Type: application/json' \
+            -d '{"folder":"demo_corpus","glob_pattern":"**/*.md","chunk_chars":800,"overlap_chars":133}' \
+            | python -m json.tool
+
+      - name: Eval gate (small)
+        run: |
+          mkdir -p reports
+          python eval/run_eval.py \
+            --base_url http://127.0.0.1:8000 \
+            --input eval/eval_set.jsonl \
+            --out reports/ci_report.md \
+            --run_name ci \
+            -k 5 --min_score 0.25 \
+            --gate \
+            --min_recall 0.80 \
+            --min_refusal_acc 0.80 \
+            --min_citation_precision 0.60 \
+            --max_hallucination_rate 0.35
